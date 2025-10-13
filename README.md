@@ -4,7 +4,7 @@ This repository provides the official implementation of the paper:
 
 > **State-of-health estimation for fast-charging lithium-ion batteries based on a short charge curve using graph convolutional and long short-term memory networks**  
 > *Yuxin He, Zhongwei Deng, Jue Chen, Weihan Li, Jingjing Zhou, Fei Xiang, Xiaosong Hu*  
-> [📄 Paper (Energy Journal, 2025)](https://doi.org/10.1016/j.jechem.2024.06.024)
+> [📄 Paper (Journal of Energy Chemistry, 2024)](https://doi.org/10.1016/j.jechem.2024.06.024)
 
 ---
 
