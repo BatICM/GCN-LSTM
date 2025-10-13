@@ -1,135 +1,82 @@
-Battery SOH Estimation Using GCN-LSTM
+# 🔋 Battery SOH Estimation Using GCN-LSTM
 
-This project implements a Graph Convolutional Network (GCN) combined with a Long Short-Term Memory (LSTM) network to estimate the State of Health (SOH) of lithium-ion batteries.
-The model leverages time-series voltage data from charge cycles, converting them into graph structures for deep learning–based regression.
+This repository provides the official implementation of the paper:
 
-📘 Overview
+> **State-of-health estimation for fast-charging lithium-ion batteries based on a short charge curve using graph convolutional and long short-term memory networks**  
+> *Yuxin He, Zhongwei Deng, Jue Chen, Weihan Li, Jingjing Zhou, Fei Xiang, Xiaosong Hu*  
+> [📄 Paper PDF (ScienceDirect)]([[https://doi.org/10.1016/j.jechem.2024.06.024]]
+---
 
-The pipeline performs the following steps:
+## 📖 Abstract
 
-Data Loading
+An efficient health estimation method based on **short-term charging data**, integrating **Graph Convolutional Networks (GCN)** and **Long Short-Term Memory (LSTM)** networks, is proposed to accurately estimate the health of batteries during fast charging.  
+The method extracts short charging segments around current switch points, transforms them into graphical representations, and employs a hybrid GCN–LSTM architecture to capture both **local** and **temporal** degradation features.  
+Extensive experiments on **185 cells and 81 fast-charging policies** validate the high accuracy and generalization capability of the proposed method (MAE = 0.34%, RMSE = 0.66%).
 
-Reads .mat battery datasets (MATLAB format).
+---
 
-Extracts charging cycle data: Voltage (V), Capacity (C), Charge quantity (Q), and Time (T).
+## ⚙️ Method Overview
 
-Data Cleaning and Preprocessing
+### 🔹 Technical Roadmap
+![Method Overview](figs/Fig4_Methodology.png)
+> **Fig. 4.** Schematic of the proposed method:  
+> (a) charging segment extraction, (b) structure of the GCN-LSTM model, and (c) complete workflow for SOH estimation.
 
-Sorts and filters data.
+---
 
-Aligns charge cycles around a current switch point (Q_0).
+## 📊 Dataset and Preprocessing
 
-Performs linear interpolation on voltage-time curves.
+### 🔹 MIT–Stanford Battery Dataset
+![Dataset Overview](figs/Fig1_MIT_Stanford.png)
+> **Fig. 1.** (a) Examples of fast-charging policies; (b) aging trajectories under 81 distinct policies.
 
-Graph Construction
+### 🔹 Feature Extraction and Correlation
+![Feature Extraction](figs/Fig2_FeatureExtraction.png)
+![Correlation Analysis](figs/Fig3_Correlation.png)
+> **Figs. 2–3.** Voltage sequence extraction near current switching points and correlation distributions of extracted features across different durations.
 
-Splits interpolated voltage sequences into node segments.
+---
 
-Generates edge connections and weights using inner-product similarity.
+## 🧠 Model Architecture
 
-Creates PyTorch Geometric Data objects for each cycle.
+### 🔹 GCN-LSTM Structure
+![GCN-LSTM Model](figs/Fig5_ModelStructure.png)
+> **Fig. 5.** Architecture of the proposed GCN–LSTM model, combining spatial and temporal feature extraction.
 
-Model Architecture
+### 🔹 Network Configuration
+| Layer | Type | Output | Activation |
+|:------|:-----|:--------|:-----------|
+| 1 | GCNConv | 80 | ReLU |
+| 2 | GCNConv | 40 | ReLU |
+| 3 | LSTM | 10 | — |
+| 4 | FC | 1 | — |
 
-Two GCN layers extract topological and feature relationships.
+---
 
-LSTM layer captures temporal dependencies across nodes.
+## 🧪 Experimental Results
 
-A fully connected layer predicts the battery SOH.
+### 🔹 SOH Estimation under Different Fast-Charging Policies
+![SOH Results](figs/Fig6_Results.png)
+> **Fig. 6.** Comparison between predicted and actual SOH values across six representative charging policies.
 
-Training and Evaluation
+### 🔹 Estimation Errors
+![Error Distribution](figs/Fig7_Errors.png)
+> **Fig. 7.** Distribution of MAE and RMSE for 185 cells.
 
-Uses a custom MAE (Mean Absolute Error) loss function.
+### 🔹 Comparative Performance
+![Comparison with Other Methods](figs/Fig9_Comparison.png)
+> **Fig. 9.** Comparison between traditional ML (SVR, RFR, GPR) and deep learning (GCN, LSTM, GCN-LSTM) models.
 
-Optimized with Adam and a step learning rate scheduler.
+---
 
-Trained for 100 epochs and tested on unseen cycles.
+## 📈 Sensitivity Analysis
 
-Visualization
+![Duration Influence](figs/Fig12_DurationEffect.png)
+> **Fig. 12.** Influence of charging segment duration (2, 4, 6 min) on estimation accuracy.
 
-Plots predicted vs. actual SOH curves.
+![Results by Duration](figs/Fig13_DurationResults.png)
+> **Fig. 13.** SOH estimation results at different segment durations.
 
-Displays error distribution histogram and regression scatter plots.
+---
 
-⚙️ Dependencies
-
-Install the required packages before running:
-
-pip install numpy matplotlib scipy scikit-learn torch torch-geometric
-
-
-⚠️ Note:
-Ensure that your version of torch-geometric matches your installed torch version.
-Example:
-
-pip install torch==2.2.0 torch-geometric==2.4.0
-
-🗂️ Data Preparation
-
-The input file should be a MATLAB .mat file containing battery cycle data structured as:
-
-batchX[number][2][0][i][1] → time array
-batchX[number][2][0][i][2] → charge quantity
-batchX[number][2][0][i][3] → current
-batchX[number][2][0][i][4] → voltage
-batchX[number][2][0][i][8] → capacity
-
-
-Update the following parameters in the script:
-
-root = 'D:/data/data_new/matlab_data1_21_48.mat'  # path to .mat file
-fl = loadmat(root)['batch4']                      # dataset name
-number = 7                                        # cell index
-singal_size = 10                                  # node length
-Initial_capacity = 1.1                            # reference capacity
-Q_0 = Initial_capacity * 0.27                     # SOC switching point
-
-🧠 Model Details
-Architecture
-Layer	Type	Output Dim	Activation
-1	GCNConv	80	ReLU
-2	GCNConv	40	ReLU
-3	LSTM	10	—
-4	Linear	1	—
-🚀 Training
-
-Run the training pipeline:
-
-python main.py
-
-
-The model will:
-
-Train for 100 epochs
-
-Print training loss after each epoch
-
-Save the best model as model.pth under models/
-
-🧩 Evaluation Metrics
-
-MAE (Mean Absolute Error)
-
-RMSE (Root Mean Square Error)
-
-These metrics evaluate prediction accuracy against real SOH values.
-
-📊 Visualization
-
-Two main plots are generated:
-
-Cycle vs. SOH Comparison
-
-Actual vs. Predicted SOH values per cycle.
-
-Error Distribution
-
-Scatter plot of observed vs. estimated SOH.
-
-Embedded histogram showing error distribution.
-
-📁 Outputs
-File	Description
-model.pth	Trained model weights
-plots/	Folder for visualizations
-logs.txt	Training progress log (optional)
+## 📦 Repository Structure
